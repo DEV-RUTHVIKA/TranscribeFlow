@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>TranscribeFlow - Sign Up</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+
+    <div class="app-container">
+        <div class="top-bar">
+            <div class="logo">TranscribeFlow</div>
+        </div>
+
+        <div class="card small-card">
+            <h2>Create Account</h2>
+
+            <form method="POST" action="/signup">
+                <input type="text" name="username" placeholder="Enter username or email" required>
+                <input type="password" name="password" placeholder="Enter password" required>
+                <input type="password" name="confirm_password" placeholder="Re-enter password" required>
+                <button type="submit" class="primary-btn">Sign Up</button>
+            </form>
+
+
+            <p class="error-msg">{{ error }}</p>
+
+
+            <p class="switch-link">
+                Already have an account? <a href="/">Login</a>
+            </p>
+        </div>
+    </div>
+
+</body>
+
+</html>

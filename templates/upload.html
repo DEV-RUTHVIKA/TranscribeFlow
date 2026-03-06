@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>TranscribeFlow - Upload</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+</head>
+
+<body>
+
+    <div class="app-container">
+        <div class="top-bar">
+            <div class="logo">TranscribeFlow</div>
+            {% if 'username' in session %}
+            <!-- Using an anchor tag -->
+            <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+            {% endif %}
+
+        </div>
+
+        <div class="card">
+
+
+            <form method="POST" action="/upload" enctype="multipart/form-data">
+
+                <div class="upload-box">
+                    <div class="music-icon">♪</div>
+                    <h3>Upload your audio file</h3>
+                    <p>Supported formats: MP3, WAV, M4A</p>
+
+                    <label for="file-upload" class="custom-file-btn">
+                        Choose File
+                    </label>
+
+                    <input id="file-upload" type="file" name="file" accept=".mp3,.wav,.m4a">
+
+                    <button type="submit" class="custom-file-btn">
+                        Upload
+                    </button>
+
+                    <button type="button" id="recordBtn" class="custom-file-btn">
+                        🎤 Record
+                    </button>
+
+                    <div id="status-message" class="status-msg"></div>
+
+                    <p id="file-name" class="file-name"></p>
+
+
+                    <p class="error-msg">{{ error }}</p>
+                    <p class="success-msg">{{ success }}</p>
+
+                </div>
+            </form>
+
+            {% if audio_file %}
+            <audio controls style="margin-top:15px;">
+                <source src="/uploads/{{ audio_file }}" type="audio/mpeg">
+            </audio>
+            {% endif %}
+
+            {% if show_transcribe %}
+            <form method="POST" action="/transcribe" onsubmit="showTranscribing()">
+                <button type="submit" class="primary-function" style="margin-top:20px;">
+                    Transcribe Audio
+                </button>
+            </form>
+            {% endif %}
+
+
+            {% if transcript %}
+            <div class="transcript-section">
+                <h3>📝 Transcribed Text</h3>
+
+                <div class="transcript-box">
+                    {{ transcript }}
+                </div>
+                <form method="POST" action="/summarize" onsubmit="showSummarizing()">
+                    <button class="primary-function" style="margin-top:20px;">
+                        Summarize
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+
+            {% if summary %}
+            <div class="transcript-section">
+                <h3>✨ Summary</h3>
+                <div class="transcript-box">
+                    <p>{{ summary }}</p>
+                </div>
+
+            </div>
+
+            <a href="/download/{{ txt_file }}">
+                <button class="primary-function" style="margin-top:20px;">
+                    📥 Download Text
+                </button>
+            </a>
+
+            <a href="/download_json">
+                <button class="primary-function" style="margin-top:20px;">
+                    📥 Download JSON
+                </button>
+            </a>
+
+            {% endif %}
+        </div>
+
+    </div>
+
+
+    <script>
+        const fileInput = document.getElementById("file-upload");
+        const fileNameDisplay = document.getElementById("file-name");
+
+        fileInput.addEventListener("change", function () {
+            if (this.files.length > 0) {
+                fileNameDisplay.textContent = "Selected file: " + this.files[0].name;
+            } else {
+                fileNameDisplay.textContent = "";
+            }
+        });
+
+        function showTranscribing() {
+
+            const statusBox = document.getElementById("status-message");
+
+            statusBox.innerHTML =
+                "🧠 Transcribing audio... <span class='spinner'></span>";
+
+            statusBox.className = "status-msg processing";
+        }
+
+        // Record button functionality
+        let mediaRecorder;
+        let audioChunks = [];
+        let recording = false;
+
+        const recordBtn = document.getElementById("recordBtn");
+        const statusBox = document.getElementById("status-message");
+
+        recordBtn.onclick = async () => {
+
+            if (!recording) {
+
+                statusBox.innerHTML =
+                    "🎤 Recording in progress <span class='spinner'></span>";
+                statusBox.className = "status-msg processing";
+
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.start();
+
+                recording = true;
+                recordBtn.innerText = "⏹ Stop Recording";
+
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = e => {
+                    audioChunks.push(e.data);
+                };
+
+                mediaRecorder.onstop = async () => {
+
+                    statusBox.innerHTML =
+                        "💾 Saving recording <span class='spinner'></span>";
+
+                    const blob = new Blob(audioChunks, { type: "audio/mp3" });
+
+                    const formData = new FormData();
+                    formData.append("audio", blob, "voice.mp3");
+
+                    const response = await fetch("/record", {
+                        method: "POST",
+                        body: formData
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        window.location.href =
+                            "/upload_audio?recorded=" + data.filename;
+                    }
+                };
+
+            } else {
+
+                mediaRecorder.stop();
+                recording = false;
+                recordBtn.innerText = "🎤 Record";
+
+                statusBox.innerHTML =
+                    "⏳ Processing recording...";
+            }
+        };
+
+        function showSummarizing() {
+
+            const statusBox = document.getElementById("status-message");
+
+            statusBox.innerHTML =
+                "✨ Generating summary... <span class='spinner'></span>";
+
+            statusBox.className = "status-msg processing";
+        }
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>TranscribeFlow - Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+
+    <div class="app-container">
+        <div class="top-bar">
+            <div class="logo">TranscribeFlow</div>
+        </div>
+
+        <div class="card small-card">
+            <h2>Login</h2>
+
+            <form method="POST" action="/login">
+                <input type="text" name="username" placeholder="Enter username" required>
+                <input type="password" name="password" placeholder="Enter password" required>
+                <button type="submit" class="primary-btn">Login</button>
+            </form>
+
+
+            <p class="error-msg">{{ error }}</p>
+
+            <p class="success-msg">{{ success }}</p>
+
+            <p class="switch-link">
+                New user? <a href="/signup_page">Sign Up</a>
+            </p>
+        </div>
+    </div>
+
+</body>
+
+</html>
