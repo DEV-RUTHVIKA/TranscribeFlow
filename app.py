@@ -14,7 +14,7 @@ app.secret_key = os.urandom(24)
 conn = mysql.connector.connect(
     host="localhost",
     user="root",
-    password="RMMYsql@26",
+    password="password",
     database="tflow",
     port=3307
 )
