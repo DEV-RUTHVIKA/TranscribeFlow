@@ -15,3 +15,6 @@ Transcribes speech from audio files using a speech recognition model.
 Generates a summarized version of the transcript using transformer-based NLP models.
 
 This significantly reduces the time required to manually review long audio recordings.
+
+## License
+This project is licensed under the MIT License.
